@@ -8,47 +8,59 @@ import matplotlib.pyplot as plt
 class Resizer:
 
     def __init__(self, im):
-        self.im = im  # is this neccessary? ???
+        self.im = np.array(im)  # is this neccessary? ???
         # store a PIL or numpy image???
 
         self.SIMPLE = 0
         self.ONE_HOT = 1
         self.BOUND_RECT = 2
 
-    def get_resize(self, mode, *args):
+    def get_resize(self, mode, scale=None):
+
+        if not scale:
+            scale = 16
+
         if mode == 0:
-            return self.resize_simple(self.im, args[0])
+            return self.resize_simple(scale)
         elif mode == 1:
-            return self.resize_one_hot(self.im, args)
+            return self.resize_one_hot(scale)
         elif mode == 2:
-            return self.resize_bound(self.im, args)
+            return self.resize_bound(scale)
         else:
             raise ValueError('bad mode')
 
-    def resize_simple(self, im, scale):
+    def resize_simple(self, scale):
         # this work on PIL
-        w = im.shape[0] / scale
-        h = im.shape[1] / scale
+        temp_im = Image.fromarray(self.im)
+        w = int(temp_im.size[0] / scale)
+        h = int(temp_im.size[1] / scale)
         size = (w, h)
-        return im.resize(size, Image.LANCZOS)
+        downscaled = temp_im.resize(size, Image.NEAREST)
+        upscaled = downscaled.resize((temp_im.size[0], temp_im.size[1]), Image.BILINEAR)
+        return np.array(upscaled)
 
     def resize_one_hot(self, scale):
         # this is a np operation
-        pass
+        return self.im
 
     def resize_bound(self, scale):
         # ditto
-        pass
+        return self.im
 
     def show_resizes(self):
         im_dict = {}
+        plt.subplot(2, 2, 1)
+        plt.axis('off')
+        plt.imshow(self.im)
+
         for i in range(3):
             im_dict[i] = self.get_resize(i)
-            plt.subplot(1, 3, i)
+            plt.subplot(2, 2, i + 2)
             plt.imshow(im_dict[i])
-            plt.axes('off')
+            plt.axis('off')
 
         plt.show()
+
 
 class Distorter:
 
@@ -71,3 +83,8 @@ class Distorter:
         im_path = 'test'
         im_pil = Image.fromarray(im)
         im_pil.save(im_path)
+
+
+test_im = Image.open('../data/test_dir/aachen_000001_000019_gtFine_labelIds.png')
+r = Resizer(test_im)
+r.show_resizes()
