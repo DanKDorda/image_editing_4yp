@@ -50,7 +50,6 @@ class Resizer:
 
         plt.show()
 
-
 class Distorter:
 
     def __init__(self, t_dir):
