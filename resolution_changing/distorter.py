@@ -1,8 +1,9 @@
-import os
 import numpy as np
 import utils.file_utils as fu
 from PIL import Image
 import matplotlib.pyplot as plt
+import resolution_changing.bounding as bou
+import cv2
 
 
 class Resizer:
@@ -18,7 +19,7 @@ class Resizer:
     def get_resize(self, mode, scale=None):
 
         if not scale:
-            scale = 16
+            scale = 8
 
         if mode == 0:
             return self.resize_simple(scale)
@@ -29,19 +30,26 @@ class Resizer:
         else:
             raise ValueError('bad mode')
 
-    def resize_simple(self, scale):
+    def resize_simple(self, scale, image=None):
         # this work on PIL
-        temp_im = Image.fromarray(self.im)
+        if image is None:
+            temp_im = Image.fromarray(self.im)
+        else:
+            temp_im = Image.fromarray(image)
         w = int(temp_im.size[0] / scale)
         h = int(temp_im.size[1] / scale)
         size = (w, h)
         downscaled = temp_im.resize(size, Image.NEAREST)
-        upscaled = downscaled.resize((temp_im.size[0], temp_im.size[1]), Image.BILINEAR)
+        upscaled = downscaled.resize((temp_im.size[0], temp_im.size[1]), Image.NEAREST)
         return np.array(upscaled)
 
     def resize_one_hot(self, scale):
-        # this is a np operation
-        return self.im
+        # this is a np operation -> si self.im is right type
+        hots, cols = bou.make_one_hots(self.im)
+        resize_list = [self.resize_simple(scale, h[0]) for h in
+                       np.split(hots, hots.shape[0])]
+        glued_im = bou.glue(resize_list, cols)
+        return glued_im
 
     def resize_bound(self, scale):
         # ditto
@@ -85,6 +93,6 @@ class Distorter:
         im_pil.save(im_path)
 
 
-test_im = Image.open('../data/test_dir/aachen_000001_000019_gtFine_labelIds.png')
+test_im = Image.open('../data/test_img.bmp')
 r = Resizer(test_im)
 r.show_resizes()
