@@ -66,8 +66,6 @@ def get_col_map(im, colour, idx):
         return 255 * colour_map, idx
 
 
-
-
 def get_order(lc):
     # get tuple of size x layer
 

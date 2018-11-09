@@ -1,3 +1,4 @@
+from os.path import join
 import numpy as np
 import utils.file_utils as fu
 from PIL import Image
@@ -8,15 +9,15 @@ import cv2
 
 class Resizer:
 
+    SIMPLE = 0
+    ONE_HOT = 1
+    BOUND_RECT = 2
+
     def __init__(self, im):
         self.im = np.array(im)  # is this neccessary? ???
         # store a PIL or numpy image???
 
-        self.SIMPLE = 0
-        self.ONE_HOT = 1
-        self.BOUND_RECT = 2
-
-    def get_resize(self, mode, scale=None):
+    def get_resize(self, mode, scale=None, return_format='?'):
 
         if not scale:
             scale = 8
@@ -73,6 +74,7 @@ class Resizer:
 class Distorter:
 
     def __init__(self, t_dir):
+        self.t_dir = t_dir
         self.file_list = fu.get_files(t_dir)
         self.num_files = len(self.file_list)
 
@@ -80,19 +82,24 @@ class Distorter:
         im = Image.open(self.file_list[idx])
         return np.array(im)
 
-    def distort(self, im, range, start=0):
+    def distort_directory(self, im, range, start=0, mode=Resizer.SIMPLE, res_dir='../results'):
         assert range + start < self.num_files
+        fu.safe_dir(join(self.t_dir, res_dir))
 
         for file_name in self.file_list:
-            im = self.load_im(file_name)
-            self.save_distorted(im)
+            path = join(self.t_dir, file_name)
+            im = Image.open(path)
+            r = Resizer(im)
+            im2 = r.get_resize(mode)
+            self.save_distorted(im2)
 
-    def save_distorted(self, im):
-        im_path = 'test'
+    def save_distorted(self, im, og_file_name):
+        new_name = og_file_name.strip('.png') + 'distorted.png'
+        save_path = join(self.t_dir, new_name)
         im_pil = Image.fromarray(im)
-        im_pil.save(im_path)
+        im_pil.save(save_path)
 
 
 test_im = Image.open('../data/test_img.bmp')
-r = Resizer(test_im)
-r.show_resizes()
+res = Resizer(test_im)
+res.show_resizes()
