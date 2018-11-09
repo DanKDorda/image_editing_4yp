@@ -26,5 +26,7 @@ def multi_plot(ims):
 
     if isinstance(ims, list):
         plot_subplot(ims)
+    elif isinstance(ims, dict):
+        plot_subplot(ims.values())
     else:
         plot_subplot([ims])

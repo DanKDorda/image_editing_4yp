@@ -11,6 +11,7 @@ def get_files(root, *args):
 def safe_dir(name):
     p = os.getcwd()
     try:
-        os.mkdir(p+name)
+        os.mkdir(os.path.join(p,name))
     except FileExistsError:
-        print('dir {} exists'.format(name))
+        #print('dir {} exists'.format(name))
+        pass
