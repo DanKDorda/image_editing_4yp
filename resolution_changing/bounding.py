@@ -1,3 +1,5 @@
+import cv2
+
 from PIL import Image
 import numpy as np
 from bisect import bisect_left
@@ -52,12 +54,17 @@ def make_one_hots(im, opts=None):
     return hots.astype('uint8'), col_array
 
 
+def make_one_hot_list(im, opts=None):
+    hots, cols = make_one_hots(im, opts)
+    return [h[0] for h in np.split(hots, hots.shape[0])], cols
+
+
 def get_col_map(im, colour, idx):
     # unpack values
 
     if is_mono(im):
         colour_map = im == colour
-        #hack here!!! FOR NVIDIA MAKE idx === colour
+        # hack here!!! FOR NVIDIA MAKE idx === colour
         return 255 * colour_map, idx
     else:
         red, green, blue = im.T
@@ -93,8 +100,8 @@ def glue(layers, colours):
     ordered_layers, ordered_colours = get_order(zip(layers, colours))
 
     for layer, colour in zip(ordered_layers, ordered_colours):
-        #only need one colour!
-        #broadcast_colour = (np.array(colour)[:, np.newaxis, np.newaxis])
+        # only need one colour!
+        # broadcast_colour = (np.array(colour)[:, np.newaxis, np.newaxis])
         broadcast_colour = colour
         one_layer = 1 * (layer > 0)
         new_lay = (one_layer * broadcast_colour).astype('float64')  # h,w * 3
@@ -116,3 +123,39 @@ def glue(layers, colours):
         # final_img = cv2.add(final_img,new_lay)
 
     return final_img
+
+
+def bound_distort(hot):
+    '''
+    input    one hot binary image
+    output   blocky one hot binary image
+    '''
+
+    def paint_bound_rects(hot):
+        im2, contours, _ = cv2.findContours(hot, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # print(f'so many contours: {len(contours)}')
+
+        boxes = np.zeros_like(hot)
+        for c in contours:
+            rect = cv2.minAreaRect(c)
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+            cv2.drawContours(boxes, [box], -1, (127), -1)
+
+        return boxes
+
+    ker = np.ones((15, 15), np.uint8)
+    mod_hot = cv2.dilate(hot, ker, iterations=1)
+    boxes = paint_bound_rects(mod_hot)
+    smol_boxes = cv2.erode(boxes, ker, iterations=2)
+
+    return boxes
+
+
+def distort_array(hots, no_distort=[]):
+    num_lay = hots.shape[0]
+    dis_array = np.zeros_like(hots)
+    layer_list = np.split(hots, num_lay)
+    dis_gen = (bound_distort(l[0]) if i not in no_distort else l[0] for i, l in enumerate(layer_list))
+    dis_array = np.stack(dis_gen)
+    return dis_array
