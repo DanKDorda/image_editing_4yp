@@ -14,13 +14,15 @@ class ResizerTest(Resizer):
         self.scale_dict = {}
         super(ResizerTest, self).__init__(im)
 
-    def show_resizes(self):
+    def show_resizes(self, save=False):
         plt.subplot(2, 3, 1)
         plt.axis('off')
         plt.imshow(self.im)
 
         for i in range(5):
-            new_im = self.get_resize(i, 32)
+            new_im = self.get_resize(i, 64)
+            if save and i == 0 or i == 1:
+                cv2.imwrite('achen3_dis' + str(i) + '.png', new_im)
             plt.subplot(2, 3, i + 2)
             print(i)
             plt.imshow(new_im)
@@ -28,7 +30,7 @@ class ResizerTest(Resizer):
 
         plt.show()
 
-    def resize_one_hot(self, scale, params={'ker_size': (41, 41), 'thresh': 100}, past_ims=None, recursion=False):
+    def resize_one_hot(self, scale, params={'ker_size': (81, 81), 'thresh': 100}, past_ims=None, recursion=False):
         # this is a np operation -> si self.im is right type
         # make resize
         # then one hot
@@ -94,13 +96,13 @@ def test(device=1, mode='methods'):
     elif device == 2:
         test_im_path = '../data/test_dir/aachen_000001_000019_gtFine_labelIds.png'
     else:
-        test_im_path = '../data/good_results/distorted_uncold/achen11.png'
+        test_im_path = '../data/good_results/distorted_uncold/achen3.png'
 
     test_im = Image.open(test_im_path)
     print('test im shape ', np.array(test_im).shape)
     res = ResizerTest(test_im)
     if mode == 'methods':
-        res.show_resizes()
+        res.show_resizes(save=True)
     elif mode == 'hierarchies':
         hierarchy_oh = res.get_hierarchy(Resizer.ONE_HOT)
         hierarchy_sim = res.get_hierarchy(Resizer.SIMPLE)
@@ -136,7 +138,7 @@ TEST_LAPTOP = 1
 TEST_AVL = 2
 OTHER = 3
 
-test(3, mode='hierarchies')
+test(3)
 
 
 #test_hot_params(TEST_AVL)

@@ -103,5 +103,15 @@ datas = [
     '../data/good_results/res_uncold/epoch032_synthesized_image.jpg',
 ]
 
+datas = [
+    '../data/good_results/distorted_uncold/achen3.png',
+    '../data/good_results/distorted_uncold/achen3_dis1.png',
+    '../data/good_results/distorted_uncold/achen3_dis2.png',
+    '../data/good_results/distorted_uncold/achen3_dis0.png',
+]
+
+d = '../data/good_results/distorted_uncold/achen_11_blocky.png'
+#test(d)
+
 for d in datas:
     test(d)

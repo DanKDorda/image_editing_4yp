@@ -22,7 +22,7 @@ class Resizer:
             scale = 16
 
         if mode == 0:
-            return self.resize_simple(scale, no_upscale=True)
+            return self.resize_simple(scale, no_upscale=False)
         elif mode == 1:
             return self.resize_one_hot(scale)
         elif mode == 2:
