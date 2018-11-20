@@ -72,6 +72,10 @@ def get_col_map(im, colour, idx):
         colour_map = (red == target_red) & (green == target_green) & (blue == target_blue)
         return 255 * colour_map, idx
 
+def do_plot(a):
+    import utils.plotters as p
+    p.multi_plot(a)
+
 
 def get_order(lc):
     # get tuple of size x layer
@@ -83,12 +87,12 @@ def get_order(lc):
         size = l[l > 0].size
         idx = bisect_left(sizes, size)
         sizes.insert(idx, size)
-        ordered_l.insert(-idx, l)
-        ordered_c.insert(-idx, c)
+        ordered_l.insert(idx, l)
+        ordered_c.insert(idx, c)
 
     # print('dis whats coming back')
-    # plot(ordered)
-    return ordered_l, ordered_c
+    #do_plot(ordered_l)
+    return reversed(ordered_l), reversed(ordered_c)
 
 
 def glue(layers, colours):
