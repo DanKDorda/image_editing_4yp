@@ -9,7 +9,7 @@ class Distorter:
     def __init__(self, t_dir, res_dir='results'):
         self.t_dir = t_dir
         self.res_dir = res_dir
-        self.file_list = fu.get_files(t_dir, 'results', 'results_np', 'res_results')
+        self.file_list = fu.get_files(t_dir, 'results', 'results_np', 'res_results', 'res_results_noup')
         self.num_files = len(self.file_list)
 
     def distort_directory(self, images_to_change=0, start=0, mode=Resizer.SIMPLE):
@@ -40,6 +40,10 @@ class Distorter:
 def distort_in_avl():
     desk_test_dir = '../data/test_dir'
     real_deal = '../data/traning_instances'
-    d = Distorter(real_deal, 'res_results')
-    d.distort_directory()
+    d = Distorter(real_deal, 'test_noup')
+    d.distort_directory(mode=(Resizer.SIMPLE, True))
+    print('Done 100% yeaaa')
 
+
+if __name__ == "__main__":
+    distort_in_avl()
